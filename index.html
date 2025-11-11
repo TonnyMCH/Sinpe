@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Enviar 4066</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b63d6">
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; padding: 18px; max-width: 640px; margin: auto; }
+    label { display:block; margin-top:12px; font-weight:600; }
+    input { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px; }
+    button { margin-top:14px; padding:10px 14px; border:0; border-radius:8px; cursor:pointer; background:#0b63d6; color:white; font-weight:600; }
+    .muted { color:#666; font-size:0.9rem; margin-top:6px; }
+    .row { display:flex; gap:8px; }
+    .row > * { flex:1; }
+    .small { font-size:0.9rem; padding:8px; background:#f4f4f4; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <h1>Enviar mensaje a 4066</h1>
+  <p class="muted">Rellena los campos y pulsa "Abrir SMS a 4066".</p>
+
+  <label for="cantidad">Cantidad</label>
+  <input id="cantidad" type="text" placeholder="Ej: 5000" />
+
+  <label for="telefono">Número de teléfono</label>
+  <input id="telefono" type="text" placeholder="Ej: 60000000" />
+
+  <label for="descripcion">Descripción</label>
+  <input id="descripcion" type="text" placeholder="Ej: pago, recarga, etc." />
+
+  <div class="row">
+    <button id="openSms">Abrir SMS a 4066</button>
+    <button id="copy" style="background:#4a4a4a">Copiar mensaje</button>
+  </div>
+
+  <div style="margin-top:12px" class="small" id="preview">Vista previa: —</div>
+
+  <script>
+    // --- lógica principal ---
+    const cantidad = document.getElementById('cantidad');
+    const telefono = document.getElementById('telefono');
+    const descripcion = document.getElementById('descripcion');
+    const preview = document.getElementById('preview');
+    const openSms = document.getElementById('openSms');
+    const copyBtn = document.getElementById('copy');
+
+    function construirMensaje() {
+      const c = cantidad.value.trim();
+      const t = telefono.value.trim();
+      const d = descripcion.value.trim();
+      return `Pase ${c} ${t} ${d}`.trim();
+    }
+
+    function actualizarPreview() {
+      preview.textContent = 'Vista previa: ' + (construirMensaje() || '(vacío)');
+    }
+
+    [cantidad, telefono, descripcion].forEach(el => el.addEventListener('input', actualizarPreview));
+    actualizarPreview();
+
+    openSms.addEventListener('click', () => {
+      const msg = construirMensaje();
+      window.location.href = 'sms:4066?body=' + encodeURIComponent(msg);
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(construirMensaje());
+        copyBtn.textContent = 'Copiado ✓';
+        setTimeout(() => copyBtn.textContent = 'Copiar mensaje', 1500);
+      } catch (e) {
+        alert('No se pudo copiar. Copia manualmente:\n\n' + construirMensaje());
+      }
+    });
+
+    // --- registrar service worker ---
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    }
+  </script>
+</body>
+</html>
