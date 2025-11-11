@@ -9,23 +9,41 @@
   <style>
     body { font-family: system-ui, Arial, sans-serif; padding: 18px; max-width: 640px; margin: auto; }
     label { display:block; margin-top:12px; font-weight:600; }
-    input { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px; }
-    button { margin-top:14px; padding:10px 14px; border:0; border-radius:8px; cursor:pointer; background:#0b63d6; color:white; font-weight:600; }
+    input { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px; font-size:1rem; }
+    button { margin-top:14px; padding:10px 14px; border:0; border-radius:8px; cursor:pointer; background:#0b63d6; color:white; font-weight:600; font-size:1rem; }
     .muted { color:#666; font-size:0.9rem; margin-top:6px; }
-    .row { display:flex; gap:8px; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; }
     .row > * { flex:1; }
-    .small { font-size:0.9rem; padding:8px; background:#f4f4f4; border-radius:6px; }
+    .small { font-size:0.9rem; padding:8px; background:#f4f4f4; border-radius:6px; margin-top:10px; }
   </style>
 </head>
 <body>
   <h1>Enviar mensaje a 4066</h1>
-  <p class="muted">Rellena los campos y pulsa "Abrir SMS a 4066".</p>
+  <p class="muted">Completa los campos y pulsa "Abrir SMS a 4066".<br>Formato del mensaje: <b>Pase 1 83403311 Prueba</b></p>
 
   <label for="cantidad">Cantidad</label>
-  <input id="cantidad" type="text" placeholder="Ej: 5000" />
+  <input 
+    id="cantidad"
+    type="text"
+    inputmode="numeric"
+    pattern="[0-9]*"
+    placeholder="Ej: 5000"
+    oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+  />
 
   <label for="telefono">Número de teléfono</label>
-  <input id="telefono" type="text" placeholder="Ej: 60000000" />
+  <div style="display:flex;gap:8px;">
+    <input 
+      id="telefono"
+      type="text"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      placeholder="Ej: 60000000"
+      oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+      style="flex:1;"
+    >
+    <button id="pickContact" type="button" title="Elegir de contactos">📇</button>
+  </div>
 
   <label for="descripcion">Descripción</label>
   <input id="descripcion" type="text" placeholder="Ej: pago, recarga, etc." />
@@ -35,17 +53,18 @@
     <button id="copy" style="background:#4a4a4a">Copiar mensaje</button>
   </div>
 
-  <div style="margin-top:12px" class="small" id="preview">Vista previa: —</div>
+  <div class="small" id="preview">Vista previa: —</div>
 
   <script>
-    // --- lógica principal ---
     const cantidad = document.getElementById('cantidad');
     const telefono = document.getElementById('telefono');
     const descripcion = document.getElementById('descripcion');
     const preview = document.getElementById('preview');
     const openSms = document.getElementById('openSms');
     const copyBtn = document.getElementById('copy');
+    const pickBtn = document.getElementById('pickContact');
 
+    // Construir mensaje
     function construirMensaje() {
       const c = cantidad.value.trim();
       const t = telefono.value.trim();
@@ -53,29 +72,54 @@
       return `Pase ${c} ${t} ${d}`.trim();
     }
 
+    // Actualizar vista previa
     function actualizarPreview() {
-      preview.textContent = 'Vista previa: ' + (construirMensaje() || '(vacío)');
+      const msg = construirMensaje();
+      preview.textContent = 'Vista previa: ' + (msg || '(vacío)');
     }
 
     [cantidad, telefono, descripcion].forEach(el => el.addEventListener('input', actualizarPreview));
     actualizarPreview();
 
+    // Botón abrir SMS
     openSms.addEventListener('click', () => {
       const msg = construirMensaje();
       window.location.href = 'sms:4066?body=' + encodeURIComponent(msg);
     });
 
+    // Botón copiar mensaje
     copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(construirMensaje());
         copyBtn.textContent = 'Copiado ✓';
         setTimeout(() => copyBtn.textContent = 'Copiar mensaje', 1500);
       } catch (e) {
-        alert('No se pudo copiar. Copia manualmente:\n\n' + construirMensaje());
+        alert('No se pudo copiar automáticamente. Copia manualmente:\n\n' + construirMensaje());
       }
     });
 
-    // --- registrar service worker ---
+    // --- CONTACT PICKER API ---
+    if ('contacts' in navigator && 'select' in navigator.contacts) {
+      pickBtn.style.display = 'inline-block';
+    } else {
+      pickBtn.style.display = 'none';
+    }
+
+    pickBtn.addEventListener('click', async () => {
+      try {
+        const props = ['tel', 'name'];
+        const opts = { multiple: false };
+        const contacts = await navigator.contacts.select(props, opts);
+        if (contacts.length && contacts[0].tel.length) {
+          telefono.value = contacts[0].tel[0].replace(/[^0-9]/g, '');
+          telefono.dispatchEvent(new Event('input'));
+        }
+      } catch (err) {
+        console.error('No se pudo acceder a los contactos:', err);
+      }
+    });
+
+    // Registrar service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(console.error);
     }
