@@ -6,33 +6,26 @@
 
     <title>Pase Mensaje</title>
 
-    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0a84ff">
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
+        body { font-family: Arial; padding: 20px; }
         input, textarea, button {
-            width: 100%;
-            margin-bottom: 12px;
-            padding: 12px;
-            font-size: 18px;
+            width: 100%; padding: 12px;
+            margin-bottom: 12px; font-size: 18px;
         }
         button {
-            background-color: #0a84ff;
-            color: white;
-            border: none;
-            border-radius: 8px;
+            background:#0a84ff; color:white;
+            border:none; border-radius:8px;
         }
-
-        .btn2 {
-            background-color: #34c759;
+        .btn2 { background:#34c759; }
+        .contact-btn { 
+            background:#ff9f0a; 
+            margin-top:-5px;
+            margin-bottom:20px;
         }
     </style>
-
 </head>
 <body>
 
@@ -44,6 +37,8 @@
     <label>Teléfono</label>
     <input id="telefono" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="Solo números">
 
+    <button class="contact-btn" onclick="buscarContacto()">📱 Elegir contacto</button>
+
     <label>Descripción</label>
     <textarea id="descripcion" placeholder="Opcional"></textarea>
 
@@ -51,6 +46,27 @@
     <button class="btn2" onclick="enviar('4066')">Enviar al 4066</button>
 
     <script>
+        async function buscarContacto() {
+            if (!("contacts" in navigator)) {
+                alert("Tu dispositivo no soporta seleccionar contactos");
+                return;
+            }
+
+            try {
+                const props = ["name", "tel"];
+                const options = { multiple: false };
+
+                const contacto = await navigator.contacts.select(props, options);
+
+                if (contacto.length > 0 && contacto[0].tel.length > 0) {
+                    document.getElementById("telefono").value = contacto[0].tel[0];
+                }
+
+            } catch (e) {
+                alert("No se pudo acceder a los contactos");
+            }
+        }
+
         function enviar(numero) {
             let c = document.getElementById("cantidad").value.trim();
             let t = document.getElementById("telefono").value.trim();
@@ -68,7 +84,6 @@
         }
     </script>
 
-    <!-- Registrar Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register("sw.js");
