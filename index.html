@@ -38,13 +38,13 @@
             font-size: 15px;
             font-weight: 600;
             color: #34495e;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             display: block;
         }
 
         input, textarea {
             width: 100%;
-            padding: 14px;
+            padding: 3px;
             font-size: 16px;
             background: #f9fafb;
             border: 2px solid #dcdfe3;
@@ -98,21 +98,23 @@
 
     <div class="card">
 
-        <h2>Enviar Pase</h2>
+        <h2>Enviar Sinpemovil</h2>
 
         <label>Cantidad</label>
-        <input id="cantidad" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 1, 200, 5000">
+        <input id="cantidad" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: ₡1, ₡200, ₡5000">
 
         <label>Teléfono</label>
-        <input id="telefono" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 83403311">
+        <input id="telefono" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 60608033">
 
         <button class="contact-btn" onclick="buscarContacto()">📱 Elegir contacto</button>
 
         <label>Descripción</label>
         <textarea id="descripcion" rows="3" placeholder="Opcional"></textarea>
 
-        <button onclick="enviar('2627')">Enviar al 2627</button>
-        <button class="btn-green" onclick="enviar('4066')">Enviar al 4066</button>
+        <button onclick="enviar('2627')">Enviar al 2627 <br>
+Banco Nacional</button>
+        <button class="btn-green" onclick="enviar('4066')">Enviar al 4066 <br>
+Banco Costa Rica</button>
 
     </div>
 
