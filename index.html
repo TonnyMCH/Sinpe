@@ -92,6 +92,59 @@
         .contact-btn:hover {
             background: #e68900;
         }
+
+        /* ---------- POPUP FAVORITOS ---------- */
+        #popupFavsBg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.45);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #popupFavs {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 14px rgba(0,0,0,0.2);
+        }
+
+        .fav-item {
+            padding: 10px;
+            background: #f2f4f8;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fav-info {
+            font-weight: 600;
+        }
+
+        .fav-btn {
+            background: #4c8bf5;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            margin-right: 5px;
+        }
+
+        .fav-del {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -106,38 +159,98 @@
         <label>Teléfono</label>
         <input id="telefono" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 60608033">
 
-        <button class="contact-btn" onclick="buscarContacto()">📱 Elegir contacto</button>
+        <!-- Nuevo: Agregar favorito -->
+        <button class="contact-btn" onclick="agregarFavorito()">⭐ Agregar a Favoritos</button>
+
+        <!-- Nuevo: Ver favoritos -->
+        <button class="btn-green" onclick="mostrarFavoritos()">📂 Ver Favoritos</button>
 
         <label>Descripción</label>
         <textarea id="descripcion" rows="3" placeholder="Opcional"></textarea>
 
-        <button onclick="enviar('2627')">Enviar al 2627 <br>
-Banco Nacional</button>
-        <button class="btn-green" onclick="enviar('4066')">Enviar al 4066 <br>
-Banco Costa Rica</button>
+        <button onclick="enviar('2627')">Enviar al 2627 <br>Banco Nacional</button>
+        <button class="btn-green" onclick="enviar('4066')">Enviar al 4066 <br>Banco Costa Rica</button>
 
     </div>
 
+    <!-- Popup favoritos -->
+    <div id="popupFavsBg">
+        <div id="popupFavs">
+            <h3>⭐ Favoritos</h3>
+            <div id="listaFavs"></div>
+            <button style="margin-top:10px;width:100%;" onclick="cerrarFavs()">Cerrar</button>
+        </div>
+    </div>
+
     <script>
-        async function buscarContacto() {
-            if (!("contacts" in navigator)) {
-                alert("Este dispositivo no permite elegir contactos");
+        function cargarFavoritos() {
+            return JSON.parse(localStorage.getItem("favoritos") || "[]");
+        }
+
+        function guardarFavoritos(lista) {
+            localStorage.setItem("favoritos", JSON.stringify(lista));
+        }
+
+        function agregarFavorito() {
+            let nombre = prompt("Nombre del favorito:");
+            if (!nombre) return;
+
+            let numero = document.getElementById("telefono").value.trim();
+            if (!numero) {
+                alert("Debe escribir un número primero.");
                 return;
             }
 
-            try {
-                const props = ["name", "tel"];
-                const options = { multiple: false };
+            let fav = cargarFavoritos();
 
-                const contacto = await navigator.contacts.select(props, options);
-
-                if (contacto.length > 0 && contacto[0].tel.length > 0) {
-                    document.getElementById("telefono").value = contacto[0].tel[0];
-                }
-
-            } catch (e) {
-                alert("No se pudo acceder a los contactos");
+            if (fav.some(f => f.numero === numero)) {
+                alert("Ese número ya existe en favoritos");
+                return;
             }
+
+            fav.push({ nombre: nombre, numero: numero });
+            guardarFavoritos(fav);
+
+            alert("Favorito guardado ✔️");
+        }
+
+        function mostrarFavoritos() {
+            let fav = cargarFavoritos();
+            let cont = document.getElementById("listaFavs");
+            cont.innerHTML = "";
+
+            if (fav.length === 0) {
+                cont.innerHTML = "<p>No hay favoritos guardados.</p>";
+            } else {
+                fav.forEach((f, i) => {
+                    cont.innerHTML += `
+                    <div class="fav-item">
+                        <div class="fav-info">${f.nombre}<br><small>${f.numero}</small></div>
+                        <div>
+                            <button class="fav-btn" onclick="usarFavorito('${f.numero}')">Usar</button>
+                            <button class="fav-del" onclick="borrarFavorito(${i})">X</button>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            document.getElementById("popupFavsBg").style.display = "flex";
+        }
+
+        function cerrarFavs() {
+            document.getElementById("popupFavsBg").style.display = "none";
+        }
+
+        function usarFavorito(num) {
+            document.getElementById("telefono").value = num;
+            cerrarFavs();
+        }
+
+        function borrarFavorito(index) {
+            let fav = cargarFavoritos();
+            fav.splice(index, 1);
+            guardarFavoritos(fav);
+            mostrarFavoritos();
         }
 
         function enviar(numero) {
