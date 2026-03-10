@@ -54,9 +54,9 @@
             transition: border 0.2s;
         }
 
-        input:focus, textarea:focus {
-            border-color: #4c8bf5;
-        }
+            input:focus, textarea:focus {
+                border-color: #4c8bf5;
+            }
 
         button {
             width: 100%;
@@ -72,26 +72,30 @@
             transition: background 0.2s;
         }
 
-        button:hover {
-            background: #3a74d9;
+            button:hover {
+                background: #3a74d9;
+            }
+
+        .btn-red {
+            background: #e74c3c;
         }
 
         .btn-green {
             background: #34c759;
         }
 
-        .btn-green:hover {
-            background: #28a745;
-        }
+            .btn-green:hover {
+                background: #28a745;
+            }
 
         .contact-btn {
             background: #ff9800;
             margin-bottom: 20px;
         }
 
-        .contact-btn:hover {
-            background: #e68900;
-        }
+            .contact-btn:hover {
+                background: #e68900;
+            }
 
         /* ---------- POPUP FAVORITOS ---------- */
         #popupFavsBg {
@@ -170,7 +174,7 @@
 
         <button onclick="enviar('2627')">Enviar al 2627 <br>Banco Nacional</button>
         <button class="btn-green" onclick="enviar('4066')">Enviar al 4066 <br>Banco Costa Rica</button>
-
+        <button class="btn-red" onclick="enviar('4550')">Enviar al 4550 <br>Banco Popular</button>
     </div>
 
     <!-- Popup favoritos -->
